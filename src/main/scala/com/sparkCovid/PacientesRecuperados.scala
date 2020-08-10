@@ -21,11 +21,12 @@ object PacientesRecuperados
       .csv("input/datos-covid-col.csv")
 
     var df_covidSelect = datosCovid.
-      select("Fecha de notificación", "Ciudad de ubicación", "atención", "Estado", "Fecha diagnostico", "Fecha recuperado")
+      select("Fecha de notificación", "Ciudad de ubicación", "atención", "Estado", "Edad", "Sexo", "Fecha diagnostico", "Fecha recuperado")
     //df_covidSelect.show(10)
 
     // Filtramos los pacientes que esten recuperados
     var df_covid_recuperados  = df_covidSelect.filter(df_covidSelect.col("atención").===("Recuperado"))
+    println("Cantidad de pacientes recuperados: " + df_covid_recuperados.count())
 
     // Convertimos la columna de Fecha diagnostico de Timestamp a Date
     val df_InicioSintomas = df_covid_recuperados.withColumn("Fecha Inicio Sintomas", df_covid_recuperados("Fecha diagnostico").cast(DateType))
@@ -39,7 +40,12 @@ object PacientesRecuperados
     val df_covid_recuperados_dias = {
       df_dropColumns.select(col("Ciudad de ubicación"), col("atención"), col("Fecha Inicio Sintomas"), col("Fecha Recuperado Total"), datediff(to_date(col("Fecha Recuperado Total")), to_date(col("Fecha Inicio Sintomas"))).as("Dias Recuperacion"))
     }
+    println("##################### Cantidad de dias de recuperacion por paciente #####################")
     df_covid_recuperados_dias.show(25)
+
+    println("---------------  Pacientes recuperados por genero -----------------")
+    var df_PacientespPorGenero = df_covidSelect.groupBy("Sexo").count()
+    df_PacientespPorGenero.show(5)
 
 
 

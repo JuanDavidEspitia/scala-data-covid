@@ -25,49 +25,24 @@ object DatosCovid
       .csv("input/datos-covid-col.csv")
 
     // Imprimimos el dataframe
-    //datosCovid.show()
+    datosCovid.show()
 
     //println("---------------------    Cantidad de registros   -------------------")
-    //println("Casos confirmados hasta el periodo 20200807: " + datosCovid.count())
+    println("Casos confirmados hasta el periodo 20200807: " + datosCovid.count())
 
-    //println("---------------  Imprimimos la estructura del DataFrame   ---------------")
+    println("---------------  Imprimimos la estructura del DataFrame   ---------------")
     // Imprimimos la estructura del DataFrame
-    //datosCovid.printSchema()
+    datosCovid.printSchema()
 
-    //println("---------------  Cantidad de por estado  ---------------")
-    //datosCovid.groupBy("Estado").count().show()
+    println("---------------  Cantidad de por estado  ---------------")
+    datosCovid.groupBy("Estado").count().show()
 
-    //println("---------------  Cantidad por atencion del paciente  ---------------")
-    //datosCovid.groupBy("atención").count().show()
+    println("---------------  Cantidad por atencion del paciente  ---------------")
+    datosCovid.groupBy("atención").count().show()
 
-    //println("---------------  Ciudades con mayor numero de contagios ---------------")
-    //val covidCiudad = datosCovid.groupBy("Departamento o Distrito ").count()
-    //covidCiudad.orderBy(desc("count")).show()
-
-    println("---------------  Dias de recuperacion desde la fecha del diagnostico ---------------")
-
-    var df_covidSelect = datosCovid.
-      select("Fecha de notificación", "Ciudad de ubicación", "atención", "Estado", "Fecha diagnostico", "Fecha recuperado")
-    //df_covidSelect.show(10)
-
-    // Filtramos los pacientes que esten recuperados
-    var df_covid_recuperados  = df_covidSelect.filter(df_covidSelect.col("atención").===("Recuperado"))
-
-    // Convertimos la columna de Fecha diagnostico de Timestamp a Date
-    val df_InicioSintomas = df_covid_recuperados.withColumn("Fecha Inicio Sintomas", df_covid_recuperados("Fecha diagnostico").cast(DateType))
-
-    // Convertimos la columna de Fecha Recuperado de Timestamp a Date
-    val df_FinSintomas = df_InicioSintomas.withColumn("Fecha Recuperado Total", df_covid_recuperados("Fecha recuperado").cast(DateType))
-
-    // Borramos las columnas repetidas del Dataframe
-    var df_dropColumns = df_FinSintomas.drop("Fecha diagnostico", "Fecha recuperado", "Fecha de notificación")
-
-    val df_covid_recuperados_dias = {
-      df_dropColumns.select(col("Ciudad de ubicación"), col("atención"), col("Fecha Inicio Sintomas"), col("Fecha Recuperado Total"), datediff(to_date(col("Fecha Recuperado Total")), to_date(col("Fecha Inicio Sintomas"))).as("Dias Recuperacion"))
-    }
-    df_covid_recuperados_dias.show(25)
-
-
+    println("---------------  Ciudades con mayor numero de contagios ---------------")
+    val covidCiudad = datosCovid.groupBy("Departamento o Distrito ").count()
+    covidCiudad.orderBy(desc("count")).show()
 
 
   }
