@@ -51,7 +51,23 @@ object DatosCovid
 
     df_GenEdad.groupBy("Sexo").avg("Edad").withColumnRenamed("Avg(Edad)", " Edad_Promedio").show()
 
+    println("################## Grupos Etnicos ########################")
 
+    // Ejemplo: Borrar los registros nulos por columnas seleccionadas
+    // val noNullValues = load_DF.na.drop("all", Seq("x", "y"))
+    var df_GrupoEtnico = datosCovid.na.drop("all", Seq("Nombre grupo etnico"))
+    df_GrupoEtnico.show(30)
+    println("La cantidad de registros de grupos etnicos son: " + df_GrupoEtnico.count())
+
+    var df_GrupoEtnicoDepto = df_GrupoEtnico.groupBy("Departamento o Distrito ").count()
+
+    // Cantidad de contagiados de grupos etnicos por departamento
+    df_GrupoEtnicoDepto.orderBy(desc("count")).show()
+
+    // Cantidad de contagiados de grupos etnicos en el Departamento del Quindio
+    df_GrupoEtnicoDepto.filter(
+      df_GrupoEtnicoDepto.col("Departamento o Distrito ") === "Quindío")
+      .show()
 
   }
 
