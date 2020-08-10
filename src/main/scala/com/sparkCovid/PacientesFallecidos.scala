@@ -7,39 +7,41 @@ import org.apache.spark.sql.types.DateType
 
 object PacientesFallecidos
 {
-  // El metodo Logger solo permite mostrar en pantalla lineas de tipo ERROR o WARN si es el caso
-  Logger.getLogger("org").setLevel(Level.ERROR)
+  def main(args: Array[String]): Unit = {
 
-  // declaramos las variables para el entorno de procesamiento spark sql
-  val session = SparkSession.builder().appName("Pacientes Fallecidos").master("local[*]").getOrCreate()
-  // Cargamos el archivo .csv en un dataframe
-  val datosCovid = session.read
-    .option("header", "true")
-    .option("inferSchema", value = true)
-    .csv("input/datos-covid-col.csv")
+    // El metodo Logger solo permite mostrar en pantalla lineas de tipo ERROR o WARN si es el caso
+    Logger.getLogger("org").setLevel(Level.ERROR)
 
-  var df_covidSelect = datosCovid.
-    select("Fecha de notificación", "Ciudad de ubicación", "atención", "Estado", "Edad", "Sexo", "Fecha diagnostico", "Fecha de muerte")
-  //df_covidSelect.show(10)
+    // declaramos las variables para el entorno de procesamiento spark sql
+    val session = SparkSession.builder().appName("Pacientes Fallecidos").master("local[*]").getOrCreate()
+    // Cargamos el archivo .csv en un dataframe
+    val datosCovid = session.read
+      .option("header", "true")
+      .option("inferSchema", value = true)
+      .csv("input/datos-covid-col.csv")
 
-  // Filtramos los pacientes que esten recuperados
-  var df_covid_recuperados  = df_covidSelect.filter(df_covidSelect.col("atención").===("Fallecido"))
-  println("Cantidad de pacientes Fallecidos: " + df_covid_recuperados.count())
+    var df_covidSelect = datosCovid.
+      select("Fecha de notificación", "Ciudad de ubicación", "atención", "Estado", "Edad", "Sexo", "Fecha diagnostico", "Fecha de muerte")
+    //df_covidSelect.show(10)
 
-  // Convertimos la columna de Fecha diagnostico de Timestamp a Date
-  val df_InicioSintomas = df_covid_recuperados.withColumn("Fecha Inicio Sintomas", df_covid_recuperados("Fecha diagnostico").cast(DateType))
+    // Filtramos los pacientes que esten recuperados
+    var df_covid_recuperados = df_covidSelect.filter(df_covidSelect.col("atención").===("Fallecido"))
+    println("Cantidad de pacientes Fallecidos: " + df_covid_recuperados.count())
 
-  // Convertimos la columna de Fecha Recuperado de Timestamp a Date
-  val df_FinSintomas = df_InicioSintomas.withColumn("Fecha muerte", df_covid_recuperados("Fecha de muerte").cast(DateType))
+    // Convertimos la columna de Fecha diagnostico de Timestamp a Date
+    val df_InicioSintomas = df_covid_recuperados.withColumn("Fecha Inicio Sintomas", df_covid_recuperados("Fecha diagnostico").cast(DateType))
 
-  // Borramos las columnas repetidas del Dataframe
-  var df_dropColumns = df_FinSintomas.drop("Fecha diagnostico", "Fecha de muerte", "Fecha de notificación")
+    // Convertimos la columna de Fecha Recuperado de Timestamp a Date
+    val df_FinSintomas = df_InicioSintomas.withColumn("Fecha muerte", df_covid_recuperados("Fecha de muerte").cast(DateType))
 
-  val df_covid_recuperados_dias = {
-    df_dropColumns.select(col("Ciudad de ubicación"), col("atención"), col("Fecha Inicio Sintomas"), col("Fecha muerte"), datediff(to_date(col("Fecha muerte")), to_date(col("Fecha Inicio Sintomas"))).as("Dias de Fallecido"))
+    // Borramos las columnas repetidas del Dataframe
+    var df_dropColumns = df_FinSintomas.drop("Fecha diagnostico", "Fecha de muerte", "Fecha de notificación")
+
+    val df_covid_recuperados_dias = {
+      df_dropColumns.select(col("Ciudad de ubicación"), col("atención"), col("Fecha Inicio Sintomas"), col("Fecha muerte"), datediff(to_date(col("Fecha muerte")), to_date(col("Fecha Inicio Sintomas"))).as("Dias de Fallecido"))
+    }
+    println("##################### Dias previos al fallecimiento después de los primeros sintomas #####################")
+    df_covid_recuperados_dias.show(25)
   }
-  println("##################### Dias previos al fallecimiento después de los primeros sintomas #####################")
-  df_covid_recuperados_dias.show(25)
-
 
 }

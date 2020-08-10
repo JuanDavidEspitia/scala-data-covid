@@ -44,7 +44,9 @@ object PacientesRecuperados
     df_covid_recuperados_dias.show(25)
 
     println("---------------  Pacientes recuperados por genero -----------------")
-    var df_PacientespPorGenero = df_covidSelect.groupBy("Sexo").count()
+    // Normalizamos los valore del campo Sexo para que solo muestre F o M
+    var df_GenerNormalizado = df_covidSelect.withColumn("Sexo", upper(col("Sexo")))
+    var df_PacientespPorGenero = df_GenerNormalizado.groupBy("Sexo").count()
     df_PacientespPorGenero.show(5)
 
 

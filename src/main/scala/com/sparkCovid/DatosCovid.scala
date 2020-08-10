@@ -2,7 +2,7 @@ package com.sparkCovid
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.DateType
+import org.apache.spark.sql.types.{DateType, IntegerType}
 import org.apache.log4j.{Level, Logger}
 
 
@@ -43,6 +43,14 @@ object DatosCovid
     println("---------------  Ciudades con mayor numero de contagios ---------------")
     val covidCiudad = datosCovid.groupBy("Departamento o Distrito ").count()
     covidCiudad.orderBy(desc("count")).show()
+
+    // Calculamos la genero y edad promedio de los pacientes
+    println("-------------------- Genero y edad promedio de los contagiados -------------------")
+    var df_edadProm = datosCovid.withColumn("Edad", col("Edad").cast(IntegerType))
+    var df_GenEdad = df_edadProm.withColumn("Sexo", upper(col("Sexo")))
+
+    df_GenEdad.groupBy("Sexo").avg("Edad").withColumnRenamed("Avg(Edad)", " Edad_Promedio").show()
+
 
 
   }
