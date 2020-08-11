@@ -5,7 +5,6 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DateType, IntegerType}
 import org.apache.log4j.{Level, Logger}
 
-
 object DatosCovid
 {
 
@@ -68,6 +67,36 @@ object DatosCovid
     df_GrupoEtnicoDepto.filter(
       df_GrupoEtnicoDepto.col("Departamento o Distrito ") === "Quindío")
       .show()
+
+    // Pendiente realizar un Case When o Swtch case en Scala
+    /*
+    Sintaxis:
+    df.withColumn("new_column_name",
+    when(<column_condition>, <value_when_true>).otherwise(<value_when_false>))
+
+     */
+    //Ejemplo
+    // Scala:
+    // Dataframe people
+
+    /*people.select(when(people("gender") === "male", 0)
+      .when(people("gender") === "female", 1)
+      .otherwise(2))
+    */
+
+    val data = List(("James","","Smith","36636","M",60000),
+      ("Michael","Rose","","40288","M",70000),
+      ("Robert","","Williams","42114","",400000),
+      ("Maria","Anne","Jones","39192","F",500000),
+      ("Jen","Mary","Brown","","F",0))
+
+    val cols = Seq("first_name","middle_name","last_name","dob","gender","salary")
+    val df = session.createDataFrame(data).toDF(cols:_*)
+    val df2 = df.withColumn("new_gender",
+       when(col("gender") === "M","Male")
+      .when(col("gender") === "F","Female")
+      .otherwise("Unknown"))
+    df2.show(5)
 
   }
 
